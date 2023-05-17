@@ -1,0 +1,20 @@
+title Note Page Diagram - SPA
+
+participant Client
+participant Server
+
+Client->Server:GET request to server address /note_spa
+
+Client<--Server:HTML Document
+Server->(3)Double click to edit text
+Client->Server
+Client<--Server
+Client->Server:GET request to server to get main.css file
+Client<--Server:main.css file
+Client->Server:GET request to server to get main.js
+Client<--Server:main.js
+note over Client,Server:Client run the javascript code to lay out the page elements
+
+Client->Server
+Client<--Server
+

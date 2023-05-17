@@ -1,0 +1,10 @@
+title New Note Diagram - SPA
+
+participant Client
+participant Server
+
+Client->Server:POST request to server address /new_note_spa with the note as the body of the request
+note over Client,Server:Server add the new note sent by client to the stored note at its side
+Client<--Server:201 Created response assure the client the its request has been taken care of.
+Server->(3)Double click to edit text
+note over Client,Server:Client side lay out the new note on the page using JS code by updating the content of notes variable and rendering the page

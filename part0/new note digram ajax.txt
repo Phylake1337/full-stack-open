@@ -1,0 +1,21 @@
+title New Note Diagram - AJAX
+
+participant Client
+participant Server
+
+Client->Server:POST request to server address /new_note with the note as the body of the request
+note over Client,Server:Server add the new note sent by client to data.json file
+Client<--Server:302 response asks Client to send a GET request to server address /node
+Server->(3)Double click to edit text
+Client->Server:GET request to server address /note 
+Client<--Server:HTML document
+Client->Server:GET request to server to get main.css file
+Client<--Server:main.css file
+Client->Server:GET request to server to get main.js
+Client<--Server:main.js
+note over Client,Server:Client run the javascript code which asks for data.json to lay out the page elements
+
+Client->Server:GET request to get data.json
+Client<--Server:data.json
+
+note over Client,Server:Client excute the callback to render the page
