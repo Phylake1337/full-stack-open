@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react'
+
 import FilteredPersons from './components/Persons'
 import Notification from './components/Notification'
+import Filter from './components/Filter'
+import PersonForm from './components/PersonForm'
+
 import phonebookService from './services/phonebook'
 
 const App = () => {
@@ -22,17 +26,50 @@ const App = () => {
 
   const handleDeletation= (idToRemove) => {
     const personToRemove = persons.filter(person => person.id === idToRemove)[0]
-    if (window.confirm(`Delete ${personToRemove.name}?`)){
+    const ok = window.confirm(`Delete ${personToRemove.name}?`)
+    if (ok){
       phonebookService
       .remove(idToRemove)
-      .then(
-        setPersons(persons.filter(person => person.id !== idToRemove)
-        ))
+      .then(setPersons(persons.filter(person => person.id !== idToRemove)))
       .catch(error => {
         const errorMsg = `Information about ${personToRemove.name} has already has been removed from server`
         displayNotification(errorMsg, 'error')
       })
     }
+  }
+
+  const cleanForm = () => {
+    setNewName('')
+    setNewNumber('') 
+  }
+
+  const updatePerson = (duplicatedPerson,  newPerson) => {
+    const ok = window.confirm((`${newName} is already added to phonebook, replace?`))
+    if (ok){
+      console.log(duplicatedPerson)
+      console.log(newPerson)
+
+      const idToUpdate = duplicatedPerson[0].id
+      phonebookService
+        .update(idToUpdate, newPerson)
+        .then(response => {
+          setPersons(persons.map(person => person.id === idToUpdate? response:person))
+          const notifyMsg = `${newPerson.name}'s number is update successfully`
+          displayNotification(notifyMsg, 'inform')
+        })
+      cleanForm()
+    }
+  }
+
+  const addPerson = (newPerson) => {
+    phonebookService
+    .create(newPerson)
+    .then(addedPerson => {
+      setPersons(persons.concat(addedPerson))
+      const notifyMsg = `Name '${newPerson.name}' and Number '${newPerson.number}' are just added`
+      displayNotification(notifyMsg, 'inform')
+    })
+  cleanForm()
   }
 
   const handleSumbition= (event) => {
@@ -42,30 +79,17 @@ const App = () => {
       number: newNumber
     }
 
-    const personDuplication = persons.filter(person => person.name.toLowerCase() === newName.toLowerCase())
+    const duplicatedPerson = persons.filter(person => person.name.toLowerCase() === newName.toLowerCase())
 
     if (newName==='' | newNumber===''){
       alert('Cannot add empty Name/Number')
 
-    }else if(personDuplication.length!==0){
-      if (window.confirm((`${newName} is already added to phonebook, replace?`))){
-        const idToUpdate = personDuplication[0].id
-        phonebookService
-          .update(idToUpdate, newPerson)
-          .then(response => setPersons(persons.map(person => person.id === idToUpdate? response:person)))
-      }
+    }else if(duplicatedPerson.length!==0){
+      updatePerson(duplicatedPerson, newPerson)
 
     }else{               
-      phonebookService
-        .create(newPerson)
-        .then(addedPerson => {
-          setPersons(persons.concat(addedPerson))
-          setNewName('')
-          setNewNumber('')
-        })
-      const notifyMsg = `Name '${newPerson.name}' and Number '${newPerson.number}' are just added`
-      displayNotification(notifyMsg, 'inform')
-      }
+      addPerson(newPerson)
+    }
   }
 
   const effect = () => {
@@ -80,22 +104,29 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-        Filter numbers shown by name: <input value={nameFilter} onChange={handleNameFilterChange}/>
-      <h2>Add a new number</h2>
-      <form onSubmit={handleSumbition}>
-        <Notification message={message.content} notifyType={message.type}/>
-        <div>
-          Name: <input value={newName} onChange={handleNameChange}/>
-        </div>
-        <div>
-          Number: <input value={newNumber} onChange={handleNumberChange}/>
-        </div>
-        <div>
-          <button type="submit"> Add </button>
-        </div>
-      </form>
-      <h2>Numbers</h2>
-      <FilteredPersons persons={persons} nameFilter={nameFilter} handleDeletation={handleDeletation}/>
+
+      <Notification message={message.content} notifyType={message.type}/>
+
+      <Filter nameFilter={nameFilter} handleNameFilterChange={handleNameFilterChange} />
+
+      <h3>Add a new</h3>
+
+      <PersonForm 
+        handleSumbition={handleSumbition}
+        newName={newName}
+        handleNameChange={handleNameChange}
+        newNumber={newNumber}
+        handleNumberChange={handleNumberChange}
+      />
+
+      <h3>Phone numbers</h3>
+
+      <FilteredPersons 
+      persons={persons} 
+      nameFilter={nameFilter} 
+      handleDeletation={handleDeletation}
+      />
+
     </div>
   )
 }
